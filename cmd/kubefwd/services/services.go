@@ -68,7 +68,7 @@ func init() {
 	Cmd.Flags().StringP("selector", "l", "", "Selector (label query) to filter on; supports '=', '==', and '!=' (e.g. -l key1=value1,key2=value2).")
 	Cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output.")
 	Cmd.Flags().StringVarP(&domain, "domain", "d", "", "Append a pseudo domain name to generated host names.")
-	Cmd.Flags().BoolVarP(&AllInterfaces, "allinterfaces", "a", false, "Enables listening on all interfaces 0.0.0.0.")
+	Cmd.Flags().BoolVarP(&AllInterfaces, "allinterfaces", "a", false, "Listen on all interfaces 0.0.0.0.")
 
 }
 

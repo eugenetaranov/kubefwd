@@ -167,13 +167,13 @@ func (svcfwd *ServiceFWD) LoopPodsToForward(pods []v1.Pod, includePodNameInHost 
 		var dInc int
 		var err error
 
-		localIp, dInc, err = fwdnet.ReadyInterface(127, 1, svcfwd.IpC, *svcfwd.IpD, podPort)
+		log.Debugf("svcfwd.AllInterfaces: %b", svcfwd.AllInterfaces)
 
-		//if svcfwd.AllInterfaces {
-		//	localIp = net.ParseIP("0.0.0.0")
-		//} else {
-		//	localIp, dInc, err = fwdnet.ReadyInterface(127, 1, svcfwd.IpC, *svcfwd.IpD, podPort)
-		//}
+		if svcfwd.AllInterfaces {
+			localIp = net.ParseIP("0.0.0.0")
+		} else {
+			localIp, dInc, err = fwdnet.ReadyInterface(127, 1, svcfwd.IpC, *svcfwd.IpD, podPort)
+		}
 		if err != nil {
 			log.Warnf("WARNING: error readying interface: %s\n", err)
 		}
