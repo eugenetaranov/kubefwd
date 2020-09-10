@@ -133,6 +133,9 @@ func (pfo *PortForwardOpts) PortForward() error {
 		address = []string{"localhost"}
 	}
 
+	address = []string{"0.0.0.0"}
+	log.Debug("Adding address", address)
+
 	fw, err := portforward.NewOnAddresses(dialer, address, fwdPorts, pfStopChannel, make(chan struct{}), &p, &p)
 	if err != nil {
 		pfo.Stop()

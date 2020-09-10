@@ -53,6 +53,7 @@ var contexts []string
 var exitOnFail bool
 var verbose bool
 var domain string
+var AllInterfaces bool
 
 func init() {
 	// override error output from k8s.io/apimachinery/pkg/util/runtime
@@ -67,6 +68,7 @@ func init() {
 	Cmd.Flags().StringP("selector", "l", "", "Selector (label query) to filter on; supports '=', '==', and '!=' (e.g. -l key1=value1,key2=value2).")
 	Cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output.")
 	Cmd.Flags().StringVarP(&domain, "domain", "d", "", "Append a pseudo domain name to generated host names.")
+	Cmd.Flags().BoolVarP(&AllInterfaces, "allinterfaces", "a", false, "Enables listening on all interfaces 0.0.0.0.")
 
 }
 
@@ -277,7 +279,7 @@ Try:
 		for ii, namespace := range namespaces {
 			nsWatchesDone.Add(1)
 			go func(ctx string, namespace string, ipC int, ipD int) {
-				nameSpaceOpts := NamespaceOpts{
+				var nameSpaceOpts = NamespaceOpts{
 					ClientSet:         clientSet,
 					Context:           ctx,
 					Namespace:         namespace,
@@ -291,6 +293,7 @@ Try:
 					IpD:               ipD,
 					Domain:            domain,
 					ManualStopChannel: stopListenCh,
+					AllInterfaces:     AllInterfaces,
 				}
 				nameSpaceOpts.watchServiceEvents(stopListenCh)
 				nsWatchesDone.Done()
@@ -321,6 +324,7 @@ type NamespaceOpts struct {
 	IpD               int
 	Domain            string
 	ManualStopChannel chan struct{}
+	AllInterfaces     bool
 }
 
 // watchServiceEvents sets up event handlers to act on service-related events.
@@ -392,6 +396,7 @@ func (opts *NamespaceOpts) AddServiceHandler(obj interface{}) {
 		Headless:         svc.Spec.ClusterIP == "None",
 		PortForwards:     make(map[string]*fwdport.PortForwardOpts),
 		DoneChannel:      make(chan struct{}),
+		AllInterfaces:    opts.AllInterfaces,
 	}
 
 	// Add the service to out catalog of services being forwarded
