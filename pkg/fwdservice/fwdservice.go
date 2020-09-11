@@ -3,6 +3,7 @@ package fwdservice
 import (
 	"fmt"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"net"
 	"strconv"
 	"sync"
 	"time"
@@ -40,6 +41,7 @@ type ServiceFWD struct {
 	LastSyncedAt     time.Time                           // When was the set of pods last synced
 	PortForwards     map[string]*fwdport.PortForwardOpts // A mapping of all the pods currently being forwarded. key = podname
 	DoneChannel      chan struct{}                       // After shutdown is complete, this channel will be closed
+	AllInterfaces    bool                                // Listens on all interfaces
 }
 
 func (svcFwd *ServiceFWD) String() string {
@@ -161,8 +163,17 @@ func (svcfwd *ServiceFWD) LoopPodsToForward(pods []v1.Pod, includePodNameInHost 
 
 		podPort := ""
 		svcName := ""
+		var localIp net.IP
+		var dInc int
+		var err error
 
-		localIp, dInc, err := fwdnet.ReadyInterface(127, 1, svcfwd.IpC, *svcfwd.IpD, podPort)
+		log.Debugf("svcfwd.AllInterfaces: %b", svcfwd.AllInterfaces)
+
+		if svcfwd.AllInterfaces {
+			localIp = net.ParseIP("0.0.0.0")
+		} else {
+			localIp, dInc, err = fwdnet.ReadyInterface(127, 1, svcfwd.IpC, *svcfwd.IpD, podPort)
+		}
 		if err != nil {
 			log.Warnf("WARNING: error readying interface: %s\n", err)
 		}
