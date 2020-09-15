@@ -57,6 +57,7 @@ type PortForwardOpts struct {
 	Hostfile       *HostFileWithLock
 	ShortName      bool
 	Domain         string
+	ExtraHosts     []string
 	HostsParams    *HostsParams
 	ManualStopChan chan struct{} // Send a signal on this to stop the portforwarding
 	DoneChan       chan struct{} // Listen on this channel for when the shutdown is completed.
@@ -186,6 +187,12 @@ func (pfo *PortForwardOpts) AddHosts() {
 	}
 	pfo.Hostfile.Hosts.RemoveHost(pfo.HostsParams.nsServiceName)
 	pfo.Hostfile.Hosts.AddHost(pfo.LocalIp.String(), pfo.HostsParams.nsServiceName)
+
+	// adding extra hosts
+	for _, extraHost := range pfo.ExtraHosts {
+		pfo.Hostfile.Hosts.AddHost(pfo.LocalIp.String(), extraHost)
+	}
+
 	err := pfo.Hostfile.Hosts.Save()
 	if err != nil {
 		log.Error("Error saving hosts file", err)

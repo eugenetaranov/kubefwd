@@ -54,6 +54,7 @@ var exitOnFail bool
 var verbose bool
 var domain string
 var AllInterfaces bool
+var ExtraHosts []string
 
 func init() {
 	// override error output from k8s.io/apimachinery/pkg/util/runtime
@@ -69,6 +70,7 @@ func init() {
 	Cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output.")
 	Cmd.Flags().StringVarP(&domain, "domain", "d", "", "Append a pseudo domain name to generated host names.")
 	Cmd.Flags().BoolVarP(&AllInterfaces, "allinterfaces", "a", false, "Listen on all interfaces 0.0.0.0.")
+	Cmd.Flags().StringSliceVarP(&ExtraHosts, "extrahosts", "e", []string{}, "Extra hosts to be added to hosts file.")
 
 }
 
@@ -294,6 +296,7 @@ Try:
 					Domain:            domain,
 					ManualStopChannel: stopListenCh,
 					AllInterfaces:     AllInterfaces,
+					ExtraHosts:        ExtraHosts,
 				}
 				nameSpaceOpts.watchServiceEvents(stopListenCh)
 				nsWatchesDone.Done()
@@ -325,6 +328,7 @@ type NamespaceOpts struct {
 	Domain            string
 	ManualStopChannel chan struct{}
 	AllInterfaces     bool
+	ExtraHosts        []string
 }
 
 // watchServiceEvents sets up event handlers to act on service-related events.
@@ -397,6 +401,7 @@ func (opts *NamespaceOpts) AddServiceHandler(obj interface{}) {
 		PortForwards:     make(map[string]*fwdport.PortForwardOpts),
 		DoneChannel:      make(chan struct{}),
 		AllInterfaces:    opts.AllInterfaces,
+		ExtraHosts:       opts.ExtraHosts,
 	}
 
 	// Add the service to out catalog of services being forwarded

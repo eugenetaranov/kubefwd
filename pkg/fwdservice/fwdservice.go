@@ -42,6 +42,7 @@ type ServiceFWD struct {
 	PortForwards     map[string]*fwdport.PortForwardOpts // A mapping of all the pods currently being forwarded. key = podname
 	DoneChannel      chan struct{}                       // After shutdown is complete, this channel will be closed
 	AllInterfaces    bool                                // Listens on all interfaces
+	ExtraHosts       []string                            // Add extra hosts to the hosts file
 }
 
 func (svcFwd *ServiceFWD) String() string {
@@ -227,6 +228,7 @@ func (svcfwd *ServiceFWD) LoopPodsToForward(pods []v1.Pod, includePodNameInHost 
 				Hostfile:   svcfwd.Hostfile,
 				ShortName:  svcfwd.ShortName,
 				Domain:     svcfwd.Domain,
+				ExtraHosts: svcfwd.ExtraHosts,
 
 				ManualStopChan: make(chan struct{}),
 				DoneChan:       make(chan struct{}),
